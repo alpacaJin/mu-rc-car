@@ -6,6 +6,8 @@ This repository hosts the Arduino source code for a remote-controlled car projec
 
 ### Motor Control for Maneuverability
 
+The RC car is equipped with both DC motors and a servo motor, enabling a wide range of movements.
+
 - DC Motors: Four DC motors power the car's movement, with two motors allocated to each side of the car for differential drive capabilities. This setup allows the car to execute forward and backward motions as well as nuanced steering adjustments.
   - goAhead(): Engages all DC motors to propel the car forward
   - goBack(): Reverses the polarity on the DC motors to move the car backward
@@ -22,6 +24,12 @@ Speed adjustments are made through dynamic Pulse Width Modulation (PWM) signal m
 - Diagonal movement capabilities
   - goAheadRight(), goAheadLeft(), goBackRight(), and goBackLeft(): Adjusts the speed differential between the two sides of the car
 
+### Bluetooth Module Integration
+
+A Bluetooth module enables wireless communication between the RC car and a custom mobile application, allowing for remote operation.
+
+- Reception of command signals from a mobile application, which are then interpreted by the car's microcontroller to execute specific movements or speed adjsutments
+- Support for a broad range of commands, enabling not only directional control but also speed variations and immediate stop actions
 
 ## Installation
 
