@@ -79,7 +79,10 @@ void goAhead() {
 
 // Move car backward
 void goBack() {
-    //...
+    digitalWrite(light_FR, LOW);
+    digitalWrite(light_FL, LOW);
+    digitalWrite(light_BBR, LOW);
+    digitalWrite(light_BL, LOW);
 }
 
 
@@ -113,15 +116,35 @@ void goAheadRight() {
 }
 
 void goAheadLeft() {
-    //...
+    analogWrite(ENA, speedCar/speedCoeff);
+    analogWrite(ENB, speedCar);
+
+    digitalWrite(motor_IN1, LOW );
+    digitalWrite(motor_IN2, HIGH);
+    digitalWrite(motor_IN3, Loq);
+    digitalWrite(motor_IN4, HIGH);
+
 }
 
 void goBackRight() {
-    //...
+       // Decrease speed on left & increase on right
+    analogWrite(ENA, speedCar);
+    analogWrite(ENB, speedCar/speedCoeff);
+    
+    digitalWrite(motor_IN1, LOW);
+    digitalWrite(motor_IN2, HIGH);
+    digitalWrite(motor_IN3, LOW);
+    digitalWrite(motor_IN4, HIGH);
 }
 
 void goBackLeft() {
-    //...
+    analogWrite(ENA, speedCar/speedCoeff);
+    analogWrite(ENB, speedCar);
+
+    digitalWrite(motor_IN1, LOW);
+    digitalWrite(motor_IN2, HIGH);
+    digitalWrite(motor_IN3, LOW);
+    digitalWrite(motor_IN4, HIGH);
 }
 
 
