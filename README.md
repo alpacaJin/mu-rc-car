@@ -4,10 +4,24 @@ This repository hosts the Arduino source code for a remote-controlled car projec
 
 ## Features
 
-- Motor control for maneuvering the car in various directions (forward, backward, left, right)
-- Speed control through dynamic PWM signal adjustment
-- Bluetooth module integration for remote operation via custom mobile app
-- Basic error handling
+### Motor Control for Maneuverability
+
+- DC Motors: Four DC motors power the car's movement, with two motors allocated to each side of the car for differential drive capabilities. This setup allows the car to execute forward and backward motions as well as nuanced steering adjustments.
+  - goAhead(): Engages all DC motors to propel the car forward
+  - goBack(): Reverses the polarity on the DC motors to move the car backward
+
+- Servo Motor: A single servo motor controls the steering mechanism, allowing for precise directional changes. The servo's angle is adjusted to steer the car left or right.
+  - goRight(): Adjusts the servo to 135 degrees for turning right
+  - goLeft(): Adjusts the servo to 45 degrees for turning left
+
+### Speed Control
+
+Speed adjustments are made through dynamic Pulse Width Modulation (PWM) signal modulation, affecting the DC motors' operation speed. This is achieved by varying the duty cycle of the PWM signals sent to the motors, allowing for real-time speed adjustments during operation.
+
+- Variable speed settings for direct forward and backward movements
+- Diagonal movement capabilities
+  - goAheadRight(), goAheadLeft(), goBackRight(), and goBackLeft(): Adjusts the speed differential between the two sides of the car
+
 
 ## Installation
 
