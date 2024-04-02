@@ -19,15 +19,15 @@
 #define ENB 11                      // Motor Driver Enable B for left side speed control
 
 // Servo & Bluetooth Module pin definitions for steering & communication
-#define servoPin 9                  // Servo motor pin
-#define BT_RX 7                     // Bluetooth module RX pin for receiving data
+#define servoPin 5                  // Servo motor pin
+// #define BT_RX 7                     // Bluetooth module RX pin for receiving data
 // #define BT_TX 8                  // Bluetooth module TX pin for sending data
 
 Servo myServo;                      // Create servo object
 int servoVal;                       // Int for storing servo angle
 
-int command; 			            // Int to store app command from smartphone app
-int speedCar = 100; 	            // Default speed
+int command; 			                  // Int to store app command from smartphone app
+int speedCar = 100; 	              // Default speed
 int speedCoeff = 4;                 // Coefficient for speed sensitivity adjustment
 
 
@@ -91,7 +91,7 @@ void goBack() {
 // Turn right
 void goRight() {
     // 135 degrees for a right turn
-    servoVal = 135;
+    servoVal = 0;
     myServo.write(servoVal);             
 }
 
@@ -99,8 +99,13 @@ void goRight() {
 // Turn left
 void goLeft() {
     // 45 degrees for a left turn
-    servoVal = 45;
+    servoVal = 90;
     myServo.write(servoVal);               
+}
+
+void zero() {
+  servoVal = 45;
+  myServo.write(servoVal);
 }
 
 
@@ -168,31 +173,69 @@ void stopCar() {
 // Loop
 void loop() {
     if (Serial.available() > 0) {
-        command = Serial.read();
-        stopCar();                     // Stop car before changing directions         
+      // Read the incoming byte:
+      int command = Serial.parseInt(); // Parses an integer from incoming serial data
+      
+      // Echo the command back to the serial terminal (optional):
+      Serial.print("Command received: ");
+      Serial.println(command);
 
-        // Decode the command
-        switch (command) {
-            case 'F': goAhead();        break;
-            case 'B': goBack();         break;
-            case 'R': goRight();        break;
-            case 'L': goLeft();         break;
-            case 'I': goAheadRight();   break;
-            case 'G': goAheadLeft();    break;
-            case 'J': goBackRight();    break;
-            case 'H': goBackLeft();     break;
+      switch (command) {
+        case 0: zero();           break;    // servo
+        case 1: goAhead();        break;    // dc
+        case 2: goBack();         break;    // dc
+        case 3: goRight();        break;    // servo
+        case 4: goLeft();         break;    // servo
+        case 5: goAheadRight();   break;    // dc
+        case 6: goAheadLeft();    break;    // dc
+        case 7: goBackRight();    break;    // dc
+        case 8: goBackLeft();     break;    // dc
 
-            case '0': speedCar = 100;   break;
-            case '1': speedCar = 115;   break;
-            case '2': speedCar = 130;   break;
-            case '3': speedCar = 145;   break;
-            case '4': speedCar = 160;   break;
-            case '5': speedCar = 175;   break;
-            case '6': speedCar = 190;   break;
-            case '7': speedCar = 205;   break;
-            case '8': speedCar = 220;   break;
-            case '9': speedCar = 235;   break;
-            case 'q': speedCar = 255;   break;
-        }
+        // Speed controls
+        case 10: speedCar = 100;   break;
+        case 11: speedCar = 115;   break;
+        case 12: speedCar = 130;   break;
+        case 13: speedCar = 145;   break;
+        case 14: speedCar = 160;   break;
+        case 16: speedCar = 175;   break;
+        case 16: speedCar = 190;   break;
+        case 17: speedCar = 205;   break;
+        case 18: speedCar = 220;   break;
+        case 19: speedCar = 235;   break;
+        case 20: speedCar = 255;   break;
+        default: stopCar();       break;
+      }
+
+      delay(10);
     }
+
+    /* Preliminary Bluetooth module code */
+    // if (Serial.available() > 0) {
+    //     command = Serial.read();
+    //     stopCar();                     // Stop car before changing directions         
+
+    //     // Decode the command
+    //     switch (command) {
+    //         case 'F': goAhead();        break;
+    //         case 'B': goBack();         break;
+    //         case 'R': goRight();        break;
+    //         case 'L': goLeft();         break;
+    //         case 'I': goAheadRight();   break;
+    //         case 'G': goAheadLeft();    break;
+    //         case 'J': goBackRight();    break;
+    //         case 'H': goBackLeft();     break;
+
+    //         case '0': speedCar = 100;   break;
+    //         case '1': speedCar = 115;   break;
+    //         case '2': speedCar = 130;   break;
+    //         case '3': speedCar = 145;   break;
+    //         case '4': speedCar = 160;   break;
+    //         case '5': speedCar = 175;   break;
+    //         case '6': speedCar = 190;   break;
+    //         case '7': speedCar = 205;   break;
+    //         case '8': speedCar = 220;   break;
+    //         case '9': speedCar = 235;   break;
+    //         case 'q': speedCar = 255;   break;
+    //     }
+    // }
 }
