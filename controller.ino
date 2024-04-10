@@ -6,19 +6,22 @@
 
 // Servo & Bluetooth Module pin definitions for steering & communication
 #define servoPin 5                  // Servo motor pin
+#define motorPin 9
 #define BT_RX 7                     // Bluetooth module RX pin for receiving data
 #define BT_TX 8                     // Bluetooth module TX pin for sending data
 
-Servo myServo;                      // Create servo object
+Servo myServo;                      // servo
+Servo myMotor;                      // dc
 int servoVal;                       // Int for storing servo angle
 
 int command; 			            // Int to store app command from smartphone app
-int speedCar = 96; 	                // Default speed
+int speedCar = 90; 	                // Default speed
 
 
 void setup() {
     // Initialize servo
     myServo.attach(servoPin);
+    myMotor.attach(motorPin);
 
     // Start serial communication
     Serial.begin(9600);
@@ -37,42 +40,6 @@ void goBackLeft();
 void stopCar();
 
 
-// Move car forward
-void goAhead() {
-    myServo.write(speedCar);        // Initialize forward ~96
-
-    speedCar += 10;
-    myServo.write(speedCar);        // Increment 10 -> 106
-    Serial.print(speedCar);
-}
-
-
-// Move car backward
-void goBack() {
-    speedCar = 88;
-    myServo.write(speedCar);        // Initialize reverse ~88
- 
-    speedCar -= 5;
-    myServo.write(speedCar);        // Decrement 5 -> 83
-}
-
-
-// Turn right
-void goRight() {
-    // 0 degrees for a right turn
-    servoVal = 0;
-    myServo.write(servoVal);             
-}
-
-
-// Turn left
-void goLeft() {
-    // 180 degrees for a left turn
-    servoVal = 180;
-    myServo.write(servoVal);               
-}
-
-
 void zero() {
     // 90 degrees for center
     servoVal = 90;
@@ -80,36 +47,112 @@ void zero() {
 }
 
 
-// Diagonal movements & speed adjustments
-void goAheadRight() {
-    // Increase speed on left & decrease on right
+// Move car forward -- first command!
+void goAhead() {
+    zero();                         // Straighten out
+    speedCar += 10;
+    myMotor.write(speedCar);        // Increment 10 -> 106
+    Serial.print(speedCar);
+    Serial.print('\n');
+}
 
-    // Set both sides to move forward
+
+// Move car backward
+void goBack() {
+    zero();                         // Straighten out
+
+    speedCar = 88;
+    myMotor.write(speedCar);        // Initialize reverse ~88 (constant speed)
+    Serial.print(speedCar);
+    Serial.print('\n');
+}
+
+
+// Turn right
+void goRight() {
+    // 135 degrees for a right turn (reverse angle)
+    servoVal = 135;
+    myServo.write(servoVal);             
+}
+
+
+// Turn left
+void goLeft() {
+    // 45 degrees for a left turn (reverse angle)
+    servoVal = 45;
+    myServo.write(servoVal);               
+}
+
+
+// Diagonal movements -- arc for 3 seconds
+void goAheadRight() {
+    servoVal = 120;                  // Slight right (reverse angle)
+    myServo.write(servoVal);        
+
+    speedCar = 96;
+    speedCar += 10;
+    myMotor.write(speedCar);        // goAhead
+    Serial.print(speedCar);
+    Serial.print('\n');
+
+    delay(3000);                    // Wait for 3 seconds
+    stopCar();
 }
 
 void goAheadLeft() {
-    // Increase speed on right & decrease on left
+    servoVal = 60;                  // Slight left (reverse angle)
+    myServo.write(servoVal);        
 
-    // Set both sides to move forward
+    speedCar = 96;
+    speedCar += 10;
+    myMotor.write(speedCar);        // goAhead
+    Serial.print(speedCar);
+    Serial.print('\n');
+
+    delay(3000);                    // Wait for 3 seconds
+    stopCar();
 }
 
 void goBackRight() {
-    // Decrease speed on left & increase on right
-    
-    // Set both sides to move backwards
+    servoVal = 120;                  // Slight right (reverse angle)
+    myServo.write(servoVal);        
+
+    speedCar = 88;
+    myMotor.write(speedCar);        // goBack
+    Serial.print(speedCar);
+    Serial.print('\n');
+
+    delay(3000);                    // Wait for 3 seconds
+    stopCar();
 }
 
 void goBackLeft() {
-    // Decrease speed on right & increase on left
+    servoVal = 60;                  // Slight left (reverse angle)
+    myServo.write(servoVal);        
 
-    // Set both sides to move backwards
+    speedCar = 88;
+    myMotor.write(speedCar);        // goBack
+    Serial.print(speedCar);
+    Serial.print('\n');
+
+    delay(3000);                    // Wait for 3 seconds
+    stopCar();
 }
 
 
 // Stop
 void stopCar() {
-    speedCar = 96;
-    myServo.write(speedCar);
+    for(int i = 0; i < 10; i++) {
+      myMotor.write(speedCar);
+      speedCar++;    
+      Serial.print(speedCar);
+      Serial.print('\n');
+      delay(200);                  // Initialize forward ~96
+    }
+
+    speedCar = 91;
+    myMotor.write(speedCar);
+    Serial.print(speedCar);
 }
 
 
@@ -119,7 +162,7 @@ void loop() {
         // Read the incoming byte
         int command = Serial.parseInt(); // Parses an integer from incoming serial data
         
-        // Echo the command back to the serial terminal (optional):
+        // Echo the command back to the serial terminal
         Serial.print("Command received: ");
         Serial.println(command);
 
@@ -130,15 +173,14 @@ void loop() {
             case 3: goLeft();         break;
 
             // dc
-            case 4: goAhead();        break;   
-            case 5: goBack();         break;
+            case 4: stopCar();        break;
+            case 5: goAhead();        break;   
+            case 6: goBack();         break;
 
-            case 6: stopCar();        break;
-
-            // case 5: goAheadRight();   break;    // dc
-            // case 6: goAheadLeft();    break;    // dc
-            // case 7: goBackRight();    break;    // dc
-            // case 8: goBackLeft();     break;    // dc
+            case 7: goAheadRight();   break;
+            case 8: goAheadLeft();    break;
+            case 9: goBackRight();    break;
+            case 10: goBackLeft();    break;
 
             delay(10);
     }
