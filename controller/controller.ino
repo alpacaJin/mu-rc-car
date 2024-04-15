@@ -8,7 +8,7 @@
 // Servo & Bluetooth Module pin definitions for steering & communication
 #define servoPin 5                  // Servo motor pin
 #define motorPin 3
-#define RxD 9                      // Bluetooth module RX pin for receiving data
+#define RxD 9                       // Bluetooth module RX pin for receiving data
 #define TxD 11                      // Bluetooth module TX pin for sending data
 
 Servo myServo;                      // Servo
@@ -17,8 +17,9 @@ int servoVal;                       // Int for storing servo angle
 
 SoftwareSerial BTSerial(RxD, TxD);
 
-char command; 			                // Int to store app command from smartphone app
-int speedCar = 90; 	                // Default speed
+char command; 			            // Int to store app command from smartphone app
+int speedCar = 90; 	                // Default speed for movement
+int speedStop = 91;                 // Default speed for stop
 
 
 void setup() {
@@ -28,7 +29,7 @@ void setup() {
 
     // Start serial communication
     Serial.begin(9600);
-    BTSerial.begin(9600);           // 38400
+    BTSerial.begin(9600);
 }
 
 
@@ -54,22 +55,22 @@ void zero() {
 // Stop
 void stopCar() {
     for(int i = 0; i < 10; i++) {
-      myMotor.write(speedCar);
-      speedCar++;    
-      Serial.print(speedCar);
+      myMotor.write(speedStop);     // Initialize dc motor ~96
+      speedStop++;    
+      Serial.print(speedStop);
       Serial.print('\n');
-      // Initialize forward ~96
     }
 
-    speedCar = 91;
-    myMotor.write(speedCar);
-    Serial.print(speedCar);
+    speedStop = 90;
+    myMotor.write(speedStop);
+    Serial.print(speedStop);
 }
 
 
 // Move car forward -- first command!
 void goAhead() {
     zero();                         // Straighten out
+    
     speedCar += 10;
     myMotor.write(speedCar);        // Increment 10 -> 106
     Serial.print(speedCar);
@@ -89,8 +90,7 @@ void goBack() {
 
 
 // Turn right
-void goRight() {
-    // 105 degrees for a right turn (reverse angle)
+void goRight() {                    // 105 degrees for a right turn (reverse angle)
     servoVal = 105;
     myServo.write(servoVal);             
 }
@@ -98,8 +98,7 @@ void goRight() {
 
 // Turn left
 void goLeft() {
-    // 72 degrees for a left turn (reverse angle)
-    servoVal = 72;
+    servoVal = 72;                  // 72 degrees for a left turn (reverse angle)
     myServo.write(servoVal);               
 }
 
@@ -151,55 +150,45 @@ void goBackLeft() {
 // Loop
 void loop() {
     if (BTSerial.available()) {
-        command = BTSerial.read();                                                 // Read incoming byte from app
+        command = BTSerial.read();  // Read incoming byte from app
         Serial.write(command);
 
-
-        /*  Parse into command */
+        /* Map commands to functionality */
         switch (command) {
             // Servo
-            case 'R':                 // Tap/Hold
+            case 'R':               // Tap/Hold right arrow
                 goRight();  
-                Serial.print("running r");
                 break;
-            case 'L':                 // Tap/Hold
+            case 'L':               // Tap/Hold left arrow
                 goLeft();
-                Serial.print("running l");
                 break;
 
             // DC
-            case 'F':                 // Tap/Hold
+            case 'F':               // Tap/Hold up arrow
                 goAhead();
-                Serial.print("running f");
                 break;
-            case 'B':                 // Tap/Hold
+            case 'B':               // Tap/Hold down arrow
                 goBack();
-                Serial.print("running b");
                 break;
 
             // Servo & DC
-            case 'G':                 // Tap/Hold
+            case 'G':               // Tap/Hold up right arrow
                 goAheadRight();
-                Serial.print("running g");
                 break;
-            case 'D':                 // Tap/Hold
+            case 'D':               // Tap/Hold up left arrow
                 goAheadLeft();
-                Serial.print("running d");
                 break;
             case 'N':
-                goBackRight();      // Tap/Hold
-                Serial.print("running n");
+                goBackRight();      // Tap/Hold down right arrow
                 break;
             case 'C':
-                goBackLeft();       // Tap/Hold
-                Serial.print("running c");
+                goBackLeft();       // Tap/Hold down left arrow
                 break;
             case 'S':                                
-                stopCar();          // Tap/Hold
-                Serial.print("running s");
+                stopCar();          // Automatically observed after button release
                 break;
             case 'H':
-                zero();
+                zero();             // Tap/Hold middle arrow
                 break;
         }
     }
