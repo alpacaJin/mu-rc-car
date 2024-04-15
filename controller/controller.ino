@@ -90,23 +90,23 @@ void goBack() {
 
 // Turn right
 void goRight() {
-    // 135 degrees for a right turn (reverse angle)
-    servoVal = 72;
+    // 105 degrees for a right turn (reverse angle)
+    servoVal = 105;
     myServo.write(servoVal);             
 }
 
 
 // Turn left
 void goLeft() {
-    // 45 degrees for a left turn (reverse angle)
-    servoVal = 105;
+    // 72 degrees for a left turn (reverse angle)
+    servoVal = 72;
     myServo.write(servoVal);               
 }
 
 
 // Diagonal movements -- arc for 3 seconds
 void goAheadRight() {
-    servoVal = 72;                 // Slight right (reverse angle)
+    servoVal = 105;                 // Slight right (reverse angle)
     myServo.write(servoVal);        
 
     speedCar = 96;
@@ -117,7 +117,7 @@ void goAheadRight() {
 }
 
 void goAheadLeft() {
-    servoVal = 105;                  // Slight left (reverse angle)
+    servoVal = 72;                  // Slight left (reverse angle)
     myServo.write(servoVal);        
 
     speedCar = 96;
@@ -128,7 +128,7 @@ void goAheadLeft() {
 }
 
 void goBackRight() {
-    servoVal = 72;                 // Slight right (reverse angle)
+    servoVal = 105;                 // Slight right (reverse angle)
     myServo.write(servoVal);        
 
     speedCar = 88;
@@ -138,7 +138,7 @@ void goBackRight() {
 }
 
 void goBackLeft() {
-    servoVal = 105;                  // Slight left (reverse angle)
+    servoVal = 72;                  // Slight left (reverse angle)
     myServo.write(servoVal);        
 
     speedCar = 88;
