@@ -7,13 +7,16 @@
 // Servo & Bluetooth Module pin definitions for steering & communication
 #define servoPin 5                  // Servo motor pin
 #define motorPin 9
-#define BT_RX 7                     // Bluetooth module RX pin for receiving data
-#define BT_TX 8                     // Bluetooth module TX pin for sending data
+#define RxD 10                      // Bluetooth module RX pin for receiving data
+#define TxD 11                      // Bluetooth module TX pin for sending data
 
-Servo myServo;                      // servo
-Servo myMotor;                      // dc
+Servo myServo;                      // Servo
+Servo myMotor;                      // DC
 int servoVal;                       // Int for storing servo angle
 
+SoftwareSerial BTSerial(RxD, TxD);
+
+int incomingA[6];                   // Array to store sequence up t 6
 int command; 			            // Int to store app command from smartphone app
 int speedCar = 90; 	                // Default speed
 
@@ -25,6 +28,7 @@ void setup() {
 
     // Start serial communication
     Serial.begin(9600);
+    BTSerial.begin(38400);
 }
 
 
@@ -44,6 +48,22 @@ void zero() {
     // 90 degrees for center
     servoVal = 90;
     myServo.write(servoVal);
+}
+
+
+// Stop
+void stopCar() {
+    for(int i = 0; i < 10; i++) {
+      myMotor.write(speedCar);
+      speedCar++;    
+      Serial.print(speedCar);
+      Serial.print('\n');
+      delay(200);                   // Initialize forward ~96
+    }
+
+    speedCar = 91;
+    myMotor.write(speedCar);
+    Serial.print(speedCar);
 }
 
 
@@ -86,7 +106,7 @@ void goLeft() {
 
 // Diagonal movements -- arc for 3 seconds
 void goAheadRight() {
-    servoVal = 120;                  // Slight right (reverse angle)
+    servoVal = 120;                 // Slight right (reverse angle)
     myServo.write(servoVal);        
 
     speedCar = 96;
@@ -114,7 +134,7 @@ void goAheadLeft() {
 }
 
 void goBackRight() {
-    servoVal = 120;                  // Slight right (reverse angle)
+    servoVal = 120;                 // Slight right (reverse angle)
     myServo.write(servoVal);        
 
     speedCar = 88;
@@ -140,67 +160,152 @@ void goBackLeft() {
 }
 
 
-// Stop
-void stopCar() {
-    for(int i = 0; i < 10; i++) {
-      myMotor.write(speedCar);
-      speedCar++;    
-      Serial.print(speedCar);
-      Serial.print('\n');
-      delay(200);                  // Initialize forward ~96
-    }
-
-    speedCar = 91;
-    myMotor.write(speedCar);
-    Serial.print(speedCar);
-}
-
-
 // Loop
 void loop() {
-    if (Serial.available() > 0) {
-        // Read the incoming byte
-        int command = Serial.parseInt(); // Parses an integer from incoming serial data
-        
-        // Echo the command back to the serial terminal
-        Serial.print("Command received: ");
-        Serial.println(command);
+    if (BTSerial.available() > 0) {
+        int incoming = BTSerial.read();                                                 // Read incoming byte from app
+        if (incoming != -1) {
+            Serial.println(incoming, DEC);
+        }
+
+        /*  Parse into command */
+        // Store up to six
+        if (sequenceIndex < 6) {
+            incomingA[sequenceIndex++] = incoming;
+        }
+
+        Serial.println(incomingA);
+
+        // Right
+        if (incomingA[0] == 128 && incomingA[1] == 128 && incomingA[2] == 120 && 
+            incomingA[3] == 248 && incomingA[4] == 128 && incomingA[5] == 120) {        // Tap
+            command = 1;
+            sequenceIndex = 0;
+
+            if (incomingA[0] != -1) {                                                                                                                   // Next command
+                command = 11;
+            }
+        }
+
+        // Left
+        if (incomingA[0] == 0 && incomingA[1] == 128 && incomingA[2] == 120 && 
+            incomingA[3] == 128 && incomingA[4] == 120) {                               // Tap
+            command = 2;
+            sequenceIndex = 0;
+        }
+        else if (incomingA[0] == 0 && incomingA[1] == 128 && incomingA[2] == 248) {     // Hold
+            command = 3;
+            if (incomingA[3] == 248 && incomingA[4] == 128 && incomingA[5] == 120) {    // Go until release
+                command = 11;
+                sequenceIndex = 0;
+            }
+        }
+
+        // Top
+        if (incomingA[0] == 128 && incomingA[1] == 0 && incomingA[2] == 120 && 
+            incomingA[3] == 128 && incomingA[4] == 120) {                               // Tap
+            command = 4;
+            sequenceIndex = 0;
+        }
+        else if (incomingA[0] == 128 && incomingA[1] == 0 && incomingA[2] == 248) {     // Hold
+            command = 5;
+            if (incomingA[3] == 248 && incomingA[4] == 128 && incomingA[5] == 120) {    // Go until release
+                command = 11;
+                sequenceIndex = 0;
+            }
+        }
+
+        // Bot right
+        if (incomingA[0] == 128 && incomingA[1] == 128 && incomingA[2] == 120 && 
+            incomingA[3] == 128 && incomingA[4] == 120) {                               // Tap
+            command = 11;
+            sequenceIndex = 0;
+        }
+        else if (incomingA[0] == 128 && incomingA[1] == 128 && incomingA[2] == 248) {   // Hold
+            command = 6;
+            if (incomingA[3] == 248 && incomingA[4] == 128 && incomingA[5] == 120) {    // Go until release
+                command = 11;
+                sequenceIndex = 0;
+            }
+        }
+
+        // Top right
+        if (incomingA[0] == 248 && incomingA[1] == 0 && incomingA[2] == 120 && 
+            incomingA[3] == 128 && incomingA[4] == 120) {                               // Tap
+            command = 7;
+            sequenceIndex = 0;
+        }
+        else if (incomingA[0] == 248 && incomingA[1] == 0 && incomingA[2] == 248) {     // Hold
+            command = 8;
+            if (incomingA[3] == 248 && incomingA[4] == 128 && incomingA[5] == 120) {    // Go until release
+                command = 11;
+                sequenceIndex = 0;
+            }
+        }
+
+        // Top left
+        if (incomingA[0] == 0 && incomingA[1] == 0 && incomingA[2] == 120 && 
+            incomingA[3] == 128 && incomingA[4] == 120) {                               // Tap
+            command = 9;
+            sequenceIndex = 0;
+        }
+        else if (incomingA[0] == 0 && incomingA[1] == 0 && incomingA[2] == 248) {       // Hold
+            command = 10;
+            if (incomingA[3] == 248 && incomingA[4] == 128 && incomingA[5] == 120) {    // Go until release
+                command = 11;
+                sequenceIndex = 0;
+            }
+        }
+
 
         switch (command) {
-            // servo
-            case 1: zero();           break;   
-            case 2: goRight();        break;    
-            case 3: goLeft();         break;
+            // Servo
+            case 1:                 // Hold
+                goRight();  
+                break;
+            case 2:                 // Tap
+                goLeft();
+                delay(1000);
+                stopCar();   
+                break;
+            case 3:                 // Hold
+                goLeft();
+                break;
 
-            // dc
-            case 4: stopCar();        break;
-            case 5: goAhead();        break;   
-            case 6: goBack();         break;
+            // DC
+            case 4:                 // Tap
+                goAhead();
+                delay(1000);
+                stopCar();   
+                break;
+            case 5:                 // Hold
+                goAhead();
+                break;
+            case 6:                 // Hold
+                goBack();
+                break;
 
-            case 7: goAheadRight();   break;
-            case 8: goAheadLeft();    break;
-            case 9: goBackRight();    break;
-            case 10: goBackLeft();    break;
-
+            // Servo & DC
+            case 7:                 // Tap
+                goAheadRight();
+                delay(1000);
+                stopCar();   
+                break;
+            case 8:                 // Hold
+                goAheadRight();
+                break;
+            case 9:                 // Tap
+                goAheadLeft();
+                delay(1000);
+                stopCar();   
+                break;
+            case 10:                // Hold
+                goAheadLeft();
+                break;
+            case 11:                                
+                stopCar();
+                break;
             delay(10);
+        }
     }
-}
-
-    /* Preliminary Bluetooth module code */
-    // if (Serial.available() > 0) {
-    //     command = Serial.read();
-    //     stopCar();                     // Stop car before changing directions         
-
-    //     // Decode the command
-    //     switch (command) {
-    //         case 'F': goAhead();        break;
-    //         case 'B': goBack();         break;
-    //         case 'R': goRight();        break;
-    //         case 'L': goLeft();         break;
-    //         case 'I': goAheadRight();   break;
-    //         case 'G': goAheadLeft();    break;
-    //         case 'J': goBackRight();    break;
-    //         case 'H': goBackLeft();     break;
-    //     }
-    // }
 }
