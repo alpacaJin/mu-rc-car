@@ -18,7 +18,7 @@ int servoVal;                       // Int for storing servo angle
 SoftwareSerial BTSerial(RxD, TxD);
 
 char command; 			            // Int to store app command from smartphone app
-int speedCar = 90; 	                // Default speed for movement
+int speedCar = 96; 	                // Default speed for movement
 int speedStop = 91;                 // Default speed for stop
 
 
@@ -70,7 +70,7 @@ void stopCar() {
 // Move car forward -- first command!
 void goAhead() {
     zero();                         // Straighten out
-    
+
     speedCar += 10;
     myMotor.write(speedCar);        // Increment 10 -> 106
     Serial.print(speedCar);
@@ -78,7 +78,7 @@ void goAhead() {
 }
 
 
-// Move car backward
+// Move car backward -- void
 void goBack() {
     zero();                         // Straighten out
 
@@ -103,12 +103,11 @@ void goLeft() {
 }
 
 
-// Diagonal movements -- arc for 3 seconds
+// Diagonal movements -- arc
 void goAheadRight() {
     servoVal = 105;                 // Slight right (reverse angle)
     myServo.write(servoVal);        
 
-    speedCar = 96;
     speedCar += 10;
     myMotor.write(speedCar);        // goAhead
     Serial.print(speedCar);
@@ -119,13 +118,13 @@ void goAheadLeft() {
     servoVal = 72;                  // Slight left (reverse angle)
     myServo.write(servoVal);        
 
-    speedCar = 96;
     speedCar += 10;
     myMotor.write(speedCar);        // goAhead
     Serial.print(speedCar);
     Serial.print('\n');
 }
 
+// void
 void goBackRight() {
     servoVal = 105;                 // Slight right (reverse angle)
     myServo.write(servoVal);        
@@ -136,12 +135,28 @@ void goBackRight() {
     Serial.print('\n');
 }
 
+// void
 void goBackLeft() {
     servoVal = 72;                  // Slight left (reverse angle)
     myServo.write(servoVal);        
 
     speedCar = 88;
     myMotor.write(speedCar);        // goBack
+    Serial.print(speedCar);
+    Serial.print('\n');
+}
+
+// Speed adjustments
+void incrementSpeed() {
+    speedCar += 10;
+    myMotor.write(speedCar);
+    Serial.print(speedCar);
+    Serial.print('\n');
+}
+
+void decrementSpeed() {
+    speedCar -= 10;
+    myMotor.write(speedCar);
     Serial.print(speedCar);
     Serial.print('\n');
 }
@@ -168,7 +183,7 @@ void loop() {
                 goAhead();
                 break;
             case 'B':               // Tap/Hold down arrow
-                goBack();
+                stopCar();
                 break;
 
             // Servo & DC
@@ -179,10 +194,10 @@ void loop() {
                 goAheadLeft();
                 break;
             case 'N':
-                goBackRight();      // Tap/Hold down right arrow
+                incrementSpeed();  // Tap/Hold down right arrow
                 break;
             case 'C':
-                goBackLeft();       // Tap/Hold down left arrow
+                decrementSpeed();  // Tap/Hold down left arrow
                 break;
             case 'S':                                
                 stopCar();          // Automatically observed after button release
